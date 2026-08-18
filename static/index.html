@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarkItDown Studio | Conversor Universal de Documentos a Markdown</title>
+  <meta name="description" content="Convierte documentos Word, Excel, PDF, PowerPoint y más a formato Markdown limpio con Microsoft MarkItDown.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Highlight.js for Code Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="highlight-theme">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <i class="fa-solid fa-file-code"></i>
+          </div>
+          <div class="brand-text">
+            <h1>MarkItDown <span>Studio</span></h1>
+            <p class="brand-subtitle">Powered by Microsoft MarkItDown Engine</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="format-badges-scroll">
+          <span class="pill-badge pdf"><i class="fa-solid fa-file-pdf"></i> PDF</span>
+          <span class="pill-badge word"><i class="fa-solid fa-file-word"></i> Word (.docx)</span>
+          <span class="pill-badge excel"><i class="fa-solid fa-file-excel"></i> Excel (.xlsx)</span>
+          <span class="pill-badge ppt"><i class="fa-solid fa-file-powerpoint"></i> PPTX</span>
+          <span class="pill-badge code"><i class="fa-solid fa-table"></i> CSV</span>
+          <span class="pill-badge code"><i class="fa-solid fa-globe"></i> HTML</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button id="btn-theme-toggle" class="icon-btn" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="btn-help-modal" class="icon-btn" title="Ayuda y Formatos" aria-label="Información y ayuda">
+          <i class="fa-solid fa-circle-question"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="main-container">
+      
+      <!-- Left Panel: Upload & Document Queue -->
+      <section class="left-panel">
+        
+        <!-- Upload Dropzone Card -->
+        <div class="card upload-card">
+          <div class="card-header">
+            <div class="title-with-icon">
+              <i class="fa-solid fa-cloud-arrow-up text-primary"></i>
+              <h2>Subir Documentos</h2>
+            </div>
+            <span class="badge" id="queue-count-badge">0 archivos</span>
+          </div>
+
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.csv,.html,.htm,.txt,.json,.xml,.png,.jpg,.jpeg" style="display: none;">
+            <div class="dropzone-content">
+              <div class="dropzone-icon">
+                <i class="fa-solid fa-file-circle-plus"></i>
+              </div>
+              <div class="dropzone-text">
+                <h3>Arrastra tus archivos aquí</h3>
+                <p>O haz clic para explorar tus carpetas</p>
+              </div>
+              <div class="dropzone-buttons">
+                <button type="button" class="btn btn-primary" id="btn-browse-files">
+                  <i class="fa-solid fa-folder-open"></i> Seleccionar Archivos
+                </button>
+              </div>
+              <span class="dropzone-hint">Soporta Excel, Word, PDF, PPTX, CSV, HTML, TXT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Files Queue Card -->
+        <div class="card queue-card">
+          <div class="card-header">
+            <div class="title-with-icon">
+              <i class="fa-solid fa-list-check text-secondary"></i>
+              <h2>Cola de Procesamiento</h2>
+            </div>
+            <div class="card-header-actions">
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-clear-queue" title="Limpiar lista" disabled>
+                <i class="fa-solid fa-trash-can"></i> Limpiar
+              </button>
+              <button type="button" class="btn btn-sm btn-success" id="btn-convert-all" disabled>
+                <i class="fa-solid fa-bolt"></i> Convertir Todo
+              </button>
+            </div>
+          </div>
+
+          <div class="queue-list-container">
+            <ul class="queue-list" id="queue-list">
+              <li class="queue-empty-state" id="queue-empty-state">
+                <i class="fa-regular fa-folder-open"></i>
+                <p>No has añadido documentos aún</p>
+                <span>Sube tus archivos PDF, Word, Excel o PPTX para comenzar</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Local Path Quick Saver Card -->
+        <div class="card destination-card">
+          <div class="card-header">
+            <div class="title-with-icon">
+              <i class="fa-solid fa-hard-drive text-accent"></i>
+              <h2>Ruta de Guardado Local</h2>
+            </div>
+            <span class="badge badge-subtle" id="save-mode-status">Directorio Listo</span>
+          </div>
+          
+          <div class="card-body">
+            <p class="card-description">
+              Especifica en qué carpeta de tu computadora deseas guardar los archivos <code>.md</code> convertidos:
+            </p>
+            
+            <div class="input-path-group">
+              <div class="input-icon-wrapper">
+                <i class="fa-solid fa-folder"></i>
+                <input type="text" id="target-directory-input" placeholder="Ej: C:\MisDocumentos\Markdown" class="text-input" spellcheck="false">
+              </div>
+              <button type="button" class="btn btn-secondary" id="btn-validate-path" title="Validar o crear directorio">
+                <i class="fa-solid fa-check"></i> Validar
+              </button>
+            </div>
+
+            <!-- Path status message -->
+            <div id="path-feedback-message" class="path-feedback"></div>
+
+            <!-- Suggested quick paths buttons -->
+            <div class="suggested-paths-wrapper">
+              <span class="label-tiny">Rutas Rápidas Sugeridas:</span>
+              <div class="suggested-buttons-list" id="suggested-paths-list">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Panel: Markdown Preview & Results -->
+      <section class="right-panel">
+        
+        <div class="card result-card">
+          
+          <!-- Document Selector Header & Metadata -->
+          <div class="result-header">
+            <div class="active-doc-selector">
+              <label for="active-file-select" class="label-doc-select"><i class="fa-solid fa-file-lines"></i> Documento Activo:</label>
+              <select id="active-file-select" class="file-dropdown" disabled>
+                <option value="">Ningún archivo convertido seleccionado</option>
+              </select>
+            </div>
+
+            <!-- Stats strip -->
+            <div class="doc-stats-strip" id="doc-stats-strip" style="display: none;">
+              <div class="stat-item" title="Caracteres totales">
+                <i class="fa-solid fa-font"></i> <span id="stat-chars">0</span> caracteres
+              </div>
+              <div class="stat-item" title="Palabras">
+                <i class="fa-solid fa-paragraph"></i> <span id="stat-words">0</span> palabras
+              </div>
+              <div class="stat-item" title="Líneas">
+                <i class="fa-solid fa-bars-staggered"></i> <span id="stat-lines">0</span> líneas
+              </div>
+              <div class="stat-item" title="Tiempo de procesamiento">
+                <i class="fa-solid fa-stopwatch"></i> <span id="stat-time">0s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- View Mode Switcher and Actions Bar -->
+          <div class="workspace-toolbar">
+            <div class="tab-controls">
+              <button type="button" class="tab-btn active" id="tab-preview" data-target="view-rendered">
+                <i class="fa-solid fa-eye"></i> Vista Previa Renderizada
+              </button>
+              <button type="button" class="tab-btn" id="tab-source" data-target="view-source">
+                <i class="fa-solid fa-code"></i> Markdown Fuente (.md)
+              </button>
+            </div>
+
+            <div class="toolbar-actions">
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-copy-md" title="Copiar Markdown al portapapeles" disabled>
+                <i class="fa-regular fa-copy"></i> Copiar
+              </button>
+              <button type="button" class="btn btn-sm btn-primary" id="btn-download-single" title="Descargar este archivo .md" disabled>
+                <i class="fa-solid fa-download"></i> Descargar .md
+              </button>
+              <button type="button" class="btn btn-sm btn-accent" id="btn-save-local-single" title="Guardar directamente en la ruta local seleccionada" disabled>
+                <i class="fa-solid fa-floppy-disk"></i> Guardar en Disco
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost-accent" id="btn-download-all-zip" title="Descargar todos los .md en un archivo .zip" disabled>
+                <i class="fa-solid fa-file-zipper"></i> Todo en .ZIP
+              </button>
+            </div>
+          </div>
+
+          <!-- Viewer Content Areas -->
+          <div class="viewer-container">
+            
+            <!-- Rendered HTML Markdown View -->
+            <div class="viewer-pane active" id="view-rendered">
+              <div class="empty-viewer" id="empty-viewer-rendered">
+                <div class="empty-illustration">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h3>El Markdown renderizado aparecerá aquí</h3>
+                <p>Sube un archivo Excel, Word, PDF o presentación para ver su formato convertido con tablas y títulos intactos.</p>
+              </div>
+              <div class="markdown-body" id="markdown-rendered-content" style="display: none;"></div>
+            </div>
+
+            <!-- Raw Markdown Source Code View -->
+            <div class="viewer-pane" id="view-source">
+              <div class="empty-viewer" id="empty-viewer-source">
+                <div class="empty-illustration">
+                  <i class="fa-solid fa-code"></i>
+                </div>
+                <h3>El código Markdown crudo aparecerá aquí</h3>
+                <p>Podrás inspeccionar, editar o copiar directamente el texto Markdown generado.</p>
+              </div>
+              <div class="source-editor-wrapper" id="source-editor-wrapper" style="display: none;">
+                <textarea id="markdown-raw-textarea" class="code-editor-textarea" placeholder="Markdown generado..." spellcheck="false"></textarea>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer Status Bar -->
+          <div class="result-footer-bar">
+            <div class="footer-left">
+              <span id="global-status-text"><i class="fa-solid fa-circle-check text-success"></i> Listo para procesar documentos.</span>
+            </div>
+            <div class="footer-right">
+              <span id="active-filename-display">Ningún archivo activo</span>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Modal: Help & Formats -->
+    <div class="modal-backdrop" id="help-modal">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div class="title-with-icon">
+            <i class="fa-solid fa-circle-info text-primary"></i>
+            <h2>Formatos Soportados & Ayuda</h2>
+          </div>
+          <button type="button" class="icon-btn-sm" id="btn-close-modal" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>MarkItDown Studio</strong> utiliza el motor oficial de Microsoft para convertir una amplia gama de formatos a Markdown estándar de forma fiel y rápida:</p>
+          
+          <div class="formats-grid">
+            <div class="format-card">
+              <i class="fa-solid fa-file-pdf icon-pdf"></i>
+              <div>
+                <strong>PDF (.pdf)</strong>
+                <p>Extrae texto, tablas estructuradas y jerarquía de títulos.</p>
+              </div>
+            </div>
+            <div class="format-card">
+              <i class="fa-solid fa-file-word icon-word"></i>
+              <div>
+                <strong>Word (.docx, .doc)</strong>
+                <p>Convierte encabezados, listas, negritas, cursivas y tablas.</p>
+              </div>
+            </div>
+            <div class="format-card">
+              <i class="fa-solid fa-file-excel icon-excel"></i>
+              <div>
+                <strong>Excel (.xlsx, .xls)</strong>
+                <p>Convierte hojas de cálculo completas a tablas Markdown limpias.</p>
+              </div>
+            </div>
+            <div class="format-card">
+              <i class="fa-solid fa-file-powerpoint icon-ppt"></i>
+              <div>
+                <strong>PowerPoint (.pptx)</strong>
+                <p>Extrae diapositivas en títulos y viñetas Markdown.</p>
+              </div>
+            </div>
+            <div class="format-card">
+              <i class="fa-solid fa-table icon-csv"></i>
+              <div>
+                <strong>CSV & Datos (.csv, .json, .xml)</strong>
+                <p>Estructura los datos tabulares o formateados.</p>
+              </div>
+            </div>
+            <div class="format-card">
+              <i class="fa-solid fa-globe icon-html"></i>
+              <div>
+                <strong>Web & Texto (.html, .htm, .txt)</strong>
+                <p>Limpia etiquetas HTML complejas y preserva el contenido.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <h4><i class="fa-solid fa-folder-tree"></i> Guardado en Ruta Local</h4>
+            <p>Puedes ingresar cualquier carpeta de tu disco duro (ej: <code>C:\Users\tu_usuario\Documentos\MD_Salidas</code>). Si la carpeta no existe, el sistema la creará automáticamente y guardará los archivos <code>.md</code> directamente allí sin descargas intermedias.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="btn-modal-ok">Entendido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+  </div>
+
+  <!-- Marked.js for Markdown to HTML Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Highlight.js for Code Highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Custom Application Script -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
